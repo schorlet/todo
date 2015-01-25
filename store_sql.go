@@ -99,6 +99,11 @@ func (s sqlStore) Filter(status string) Todos {
 // Save saves the given todo.
 func (s sqlStore) Save(t *Todo) error {
 	var query string
+	var params []interface{}
+
+	if len(t.Status) == 0 {
+		t.Status = "active"
+	}
 
 	if t.ID == 0 {
 		t.Created = time.Now().UTC()
@@ -106,17 +111,20 @@ func (s sqlStore) Save(t *Todo) error {
 		query = `INSERT INTO todo (text, status, created)
                 VALUES ($1, $2, $3)`
 
-	} else {
-		query = `UPDATE todo SET text = $1, status = $2, created = $3
-                WHERE id = $4`
-	}
+		params = append(params, t.Text, t.Status, t.Created)
 
+	} else {
+		query = `UPDATE todo SET text = $1, status = $2
+                WHERE id = $3`
+
+		params = append(params, t.Text, t.Status, t.ID)
+	}
 	// println(query)
 
 	var tx = s.db.MustBegin()
 	defer tx.Rollback()
 
-	var r, err = tx.Exec(query, t.Text, t.Status, t.Created, t.ID)
+	var r, err = tx.Exec(query, params...)
 	if err != nil {
 		log.Printf("store: save - %s\n%s\n%s\n", err, query, t)
 		return err

@@ -63,8 +63,16 @@ func TestStoreSimple(t *testing.T) {
 	defer store.Close()
 
 	// create
-	var todo = NewTodo("todo 1")
+	var todo = &Todo{Text: "todo 1"}
 	saveTodo(t, store, todo)
+
+	if todo.Status != "active" {
+		t.Fatal("todo status error", todo.Status)
+	}
+	var created = todo.Created
+	if todo.Created.IsZero() {
+		t.Fatal("todo created error", todo.Created)
+	}
 
 	// list
 	var todos = store.List()
@@ -78,6 +86,10 @@ func TestStoreSimple(t *testing.T) {
 
 	if !todo.Completed() {
 		t.Fatal("todo status error", todo.Status)
+	}
+
+	if todo.Created != created {
+		t.Fatal("todo created error", todo.Created)
 	}
 
 	// read
