@@ -102,7 +102,7 @@ func (ctx Context) Update(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if id == 0 || id != todo.ID {
-		return BadRequest{fmt.Errorf("todo: mismatch ids")} // 400
+		return BadRequest{fmt.Errorf("web: mismatch ids")} // 400
 	}
 
 	err = ctx.Store.Save(todo)
