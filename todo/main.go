@@ -5,13 +5,15 @@ import (
     "net/http"
     "os"
     "strings"
+
+    "todo"
 )
 
 func main() {
-    var store = NewStore()
+    var store = todo.NewStore()
     defer store.Close()
 
-    var handler = NewAppHandler(store)
+    var handler = todo.NewAppHandler(store)
 
     var port = os.Getenv("PORT")
     port = strings.TrimSpace(port)
