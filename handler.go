@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
+	"os"
+
+	"github.com/gorilla/handlers"
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -16,13 +18,7 @@ func About(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoggerHandler(next http.Handler) http.Handler {
-	var fn = func(w http.ResponseWriter, r *http.Request) {
-		var start = time.Now()
-		next.ServeHTTP(w, r)
-		log.Printf("[%s] %q %v\n", r.Method, r.URL.Path, time.Since(start))
-	}
-
-	return http.HandlerFunc(fn)
+	return handlers.LoggingHandler(os.Stderr, next)
 }
 
 func RecoverHandler(next http.Handler) http.Handler {
