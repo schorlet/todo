@@ -17,7 +17,7 @@ func About(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Here is the about page.")
 }
 
-func LoggerHandler(next http.Handler) http.Handler {
+func LoggingHandler(next http.Handler) http.Handler {
 	return handlers.LoggingHandler(os.Stderr, next)
 }
 
