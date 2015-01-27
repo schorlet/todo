@@ -23,11 +23,11 @@ func NewTodo(text string) *Todo {
 }
 
 func (t *Todo) Complete() {
-	t.Status = "complete"
+	t.Status = "completed"
 }
 
 func (t Todo) Completed() bool {
-	return t.Status == "complete"
+	return t.Status == "completed"
 }
 
 func (t Todo) String() string {
