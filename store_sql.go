@@ -3,9 +3,11 @@ package todo
 import (
 	"database/sql"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type sqlStore struct {
@@ -16,11 +18,18 @@ type sqlStore struct {
 // NewSqlStore connects to the database specified by driver and url
 // and returns a new Store.
 func NewSqlStore(driver, url string) Store {
+	// ---------------------------------
+	// | driver  | url                 |
+	// ---------------------------------
+	// | sqlite3 | :memory:            |
+	// | sqlite3 | /tmp/todo.sqlite    |
+	// ---------------------------------
+
 	// log.Printf("database: Opening connection to %s\n", url)
 	var db = sqlx.MustOpen(driver, url)
 
 	var tx = db.MustBegin()
-	tx.MustExec(SqlSchema)
+	tx.MustExec(CreateTable)
 
 	var err = tx.Commit()
 	if err != nil {
@@ -39,8 +48,21 @@ func (s sqlStore) Close() {
 	s.db.Close()
 }
 
+// CreateTable drop and create the todo table.
+func (s sqlStore) CreateTable() {
+	var tx = s.db.MustBegin()
+
+	tx.MustExec(DropTable)
+	tx.MustExec(CreateTable)
+
+	var err = tx.Commit()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 // Find returns the todo with the given id.
-func (s sqlStore) Find(id int64) (Todo, error) {
+func (s sqlStore) Find(id string) (Todo, error) {
 	var t Todo
 
 	var query = `SELECT id, text, status, created
@@ -98,35 +120,29 @@ func (s sqlStore) Filter(status string) Todos {
 
 // Save saves the given todo.
 func (s sqlStore) Save(t *Todo) error {
-	var query string
-	var params []interface{}
-
 	if len(t.Status) == 0 {
 		t.Status = "active"
 	}
 
-	if t.ID == 0 {
+	if len(t.ID) == 0 {
 		t.Created = time.Now().UTC()
-
-		query = `INSERT INTO todo (text, status, created)
-                VALUES ($1, $2, $3)`
-
-		params = append(params, t.Text, t.Status, t.Created)
-
-	} else {
-		query = `UPDATE todo SET text = $1, status = $2
-                WHERE id = $3`
-
-		params = append(params, t.Text, t.Status, t.ID)
+		return s.Insert(t)
 	}
-	// println(query)
+
+	return s.Update(t)
+}
+
+// Insert saves the given todo.
+func (s sqlStore) Insert(t *Todo) error {
+	var query = `INSERT INTO todo (text, status, created)
+                VALUES ($1, $2, $3)`
 
 	var tx = s.db.MustBegin()
 	defer tx.Rollback()
 
-	var r, err = tx.Exec(query, params...)
+	var r, err = tx.Exec(query, t.Text, t.Status, t.Created)
 	if err != nil {
-		log.Printf("store: save - %s\n%s\n%s\n", err, query, t)
+		log.Printf("store: insert - %s\n%s\n%s\n", err, query, t)
 		return err
 	}
 
@@ -135,23 +151,39 @@ func (s sqlStore) Save(t *Todo) error {
 		return err
 	}
 
-	if t.ID == 0 {
-		t.ID, err = r.LastInsertId()
+	autoIncr, err := r.LastInsertId()
+	t.ID = strconv.FormatInt(autoIncr, 10)
+	return err
+}
 
-	} else {
-		var count, errc = r.RowsAffected()
-		if errc == nil && count == 0 {
-			err = NotFound{sql.ErrNoRows}
-		} else if err != nil {
-			log.Printf("store: save - %s\n", err)
-		}
+// Update saves the given todo.
+func (s sqlStore) Update(t *Todo) error {
+	var query = `UPDATE todo SET text = $1, status = $2
+                WHERE id = $3`
+
+	var tx = s.db.MustBegin()
+	defer tx.Rollback()
+
+	var r, err = tx.Exec(query, t.Text, t.Status, t.ID)
+	if err != nil {
+		log.Printf("store: update - %s\n%s\n%s\n", err, query, t)
+		return err
 	}
 
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	count, err := r.RowsAffected()
+	if err == nil && count == 0 {
+		err = NotFound{sql.ErrNoRows}
+	}
 	return err
 }
 
 // Delete deletes the todo with the given id.
-func (s sqlStore) Delete(id int64) error {
+func (s sqlStore) Delete(id string) error {
 	var query = `DELETE FROM todo WHERE id = $1`
 	// println(query)
 
@@ -172,8 +204,6 @@ func (s sqlStore) Delete(id int64) error {
 	count, err := r.RowsAffected()
 	if err == nil && count == 0 {
 		err = NotFound{sql.ErrNoRows}
-	} else if err != nil {
-		log.Printf("store: delete - %s\n", err)
 	}
 
 	return err
@@ -201,3 +231,19 @@ func (s sqlStore) Clear(status string) (int64, error) {
 	count, err := r.RowsAffected()
 	return count, err
 }
+
+const DropTable = `
+DROP INDEX IF EXISTS todoStatus;
+DROP TABLE IF EXISTS todo;
+`
+
+const CreateTable = `
+CREATE TABLE IF NOT EXISTS todo (
+    id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    text    TEXT NOT NULL,
+    status  TEXT NOT NULL,
+    created DATETIME NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS todoStatus ON todo (status);
+`

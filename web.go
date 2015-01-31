@@ -3,7 +3,6 @@ package todo
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -64,7 +63,7 @@ func (ctx Context) Create(w http.ResponseWriter, r *http.Request) error {
 		return BadRequest{err} // 400
 	}
 
-	todo.ID = 0
+	todo.ID = ""
 
 	err = ctx.Store.Save(todo)
 	if err != nil {
@@ -76,12 +75,9 @@ func (ctx Context) Create(w http.ResponseWriter, r *http.Request) error {
 
 // Find handles todo selection by ID.
 func (ctx Context) Find(w http.ResponseWriter, r *http.Request) error {
-	var id, err = readID(w, r)
-	if err != nil {
-		return BadRequest{err} // 400
-	}
+	var id = readID(w, r)
 
-	todo, err := ctx.Store.Find(id)
+	var todo, err = ctx.Store.Find(id)
 	if err != nil {
 		return err // 500
 	}
@@ -96,12 +92,8 @@ func (ctx Context) Update(w http.ResponseWriter, r *http.Request) error {
 		return BadRequest{err} // 400
 	}
 
-	id, err := readID(w, r)
-	if err != nil {
-		return BadRequest{err} // 400
-	}
-
-	if id == 0 || id != todo.ID {
+	var id = readID(w, r)
+	if id != todo.ID {
 		return BadRequest{fmt.Errorf("web: mismatch ids")} // 400
 	}
 
@@ -115,12 +107,9 @@ func (ctx Context) Update(w http.ResponseWriter, r *http.Request) error {
 
 // Delete handles todo deletion.
 func (ctx Context) Delete(w http.ResponseWriter, r *http.Request) error {
-	var id, err = readID(w, r)
-	if err != nil {
-		return BadRequest{err} // 400
-	}
+	var id = readID(w, r)
 
-	err = ctx.Store.Delete(id)
+	var err = ctx.Store.Delete(id)
 	if err != nil {
 		return err // 500
 	}
@@ -137,10 +126,10 @@ func readTodo(w http.ResponseWriter, r *http.Request) (*Todo, error) {
 }
 
 // readID returns the "id" variable from the given request.
-func readID(w http.ResponseWriter, r *http.Request) (int64, error) {
+func readID(w http.ResponseWriter, r *http.Request) string {
 	var params = mux.Vars(r)
 	var idParam = params["id"]
-	return strconv.ParseInt(idParam, 10, 64)
+	return idParam
 }
 
 // readStatus returns the "status" variable from the given request.

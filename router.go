@@ -31,12 +31,12 @@ func NewRouterPrefix(prefix string) *mux.Router {
 	router.Methods("GET").Path(prefix).Name(RouteList)
 	router.Methods("POST").Path(prefix).Name(RouteCreate)
 
-	router.Methods("GET").Path(prefix + "/{id:[0-9]+}").Name(RouteFind)
-	router.Methods("PUT").Path(prefix + "/{id:[0-9]+}").Name(RouteUpdate)
-	router.Methods("DELETE").Path(prefix + "/{id:[0-9]+}").Name(RouteDelete)
+	router.Methods("GET").Path(prefix + "/{id:[A-Za-z0-9-]+}").Name(RouteFind)
+	router.Methods("PUT").Path(prefix + "/{id:[A-Za-z0-9-]+}").Name(RouteUpdate)
+	router.Methods("DELETE").Path(prefix + "/{id:[A-Za-z0-9-]+}").Name(RouteDelete)
 
-	router.Methods("GET").Path(prefix + "/{status:[a-z]+}").Name(RouteFilter)
-	router.Methods("DELETE").Path(prefix + "/{status:[a-z]+}").Name(RouteClear)
+	router.Methods("GET").Path(prefix + "/f/{status:[a-z]+}").Name(RouteFilter)
+	router.Methods("DELETE").Path(prefix + "/f/{status:[a-z]+}").Name(RouteClear)
 
 	return router
 }

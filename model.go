@@ -6,7 +6,7 @@ import (
 )
 
 type Todo struct {
-	ID      int64     `json:"id"`
+	ID      string    `json:"id"`
 	Text    string    `json:"text"`
 	Status  string    `json:"status"`
 	Created time.Time `json:"created"`
@@ -31,7 +31,7 @@ func (t Todo) Completed() bool {
 }
 
 func (t Todo) String() string {
-	return fmt.Sprintf("id:%d, text:%s, status:%s, created:%s",
+	return fmt.Sprintf("id:%s, text:%s, status:%s, created:%s",
 		t.ID, t.Text, t.Status, t.Created)
 }
 

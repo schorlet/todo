@@ -8,11 +8,7 @@ import (
 	"time"
 )
 
-func init() {
-	SqlSchema = DropSchema + SqlSchema
-}
-
-func findTodo(t *testing.T, store Store, id int64) Todo {
+func findTodo(t *testing.T, store Store, id string) Todo {
 	var todo, err = store.Find(id)
 	if err != nil {
 		// debug.PrintStack()
@@ -32,19 +28,19 @@ func saveTodo(t *testing.T, store Store, todo *Todo) {
 		t.Fatal(err)
 	}
 
-	if todo.ID == 0 {
+	if len(todo.ID) == 0 {
 		t.Fatal("todo id error", todo.ID)
 	}
 
-	if id != 0 && id != todo.ID {
+	if len(id) != 0 && id != todo.ID {
 		t.Fatal("todo id error", todo.ID)
 	}
 }
 
-func saveTodos(b *testing.B, store Store) []int64 {
+func saveTodos(b *testing.B, store Store) []string {
 	// fmt.Printf("saveTodos: %d\n", b.N)
 
-	var ids = make([]int64, b.N)
+	var ids = make([]string, b.N)
 	for i := 0; i < b.N; i++ {
 		var todo = NewTodo("todo " + strconv.Itoa(i))
 
@@ -59,7 +55,7 @@ func saveTodos(b *testing.B, store Store) []int64 {
 }
 
 func TestStoreSimple(t *testing.T) {
-	var store = NewStore()
+	var store = NewStore(Options{CreateTable: true})
 	defer store.Close()
 
 	// create
@@ -130,7 +126,7 @@ func TestStoreSimple(t *testing.T) {
 }
 
 func TestStoreFilter(t *testing.T) {
-	var store = NewStore()
+	var store = NewStore(Options{CreateTable: true})
 	defer store.Close()
 
 	// create
@@ -192,13 +188,13 @@ func TestStoreFilter(t *testing.T) {
 }
 
 func BenchmarkStoreC(b *testing.B) {
-	var store = NewStore()
+	var store = NewStore(Options{CreateTable: true})
 	defer store.Close()
 	saveTodos(b, store)
 }
 
 func BenchmarkStoreR(b *testing.B) {
-	var store = NewStore()
+	var store = NewStore(Options{CreateTable: true})
 	defer store.Close()
 	var ids = saveTodos(b, store)
 
@@ -217,7 +213,7 @@ func BenchmarkStoreR(b *testing.B) {
 }
 
 func BenchmarkStoreU(b *testing.B) {
-	var store = NewStore()
+	var store = NewStore(Options{CreateTable: true})
 	defer store.Close()
 	var ids = saveTodos(b, store)
 
@@ -241,14 +237,14 @@ func BenchmarkStoreU(b *testing.B) {
 }
 
 func BenchmarkStoreD(b *testing.B) {
-	var store = NewStore()
+	var store = NewStore(Options{CreateTable: true})
 	defer store.Close()
 	var ids = saveTodos(b, store)
 
 	rand.Seed(time.Now().UnixNano())
 	b.ResetTimer()
 
-	var idm = make(map[int64]bool)
+	var idm = make(map[string]bool)
 	for _, id := range ids {
 		idm[id] = true
 	}

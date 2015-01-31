@@ -8,22 +8,8 @@ import (
 	"time"
 )
 
-func withClient(fn func(client *Client)) {
-	var store = NewStore()
-	defer store.Close()
-
-	var handler = NewAppHandler(store)
-	var server = httptest.NewServer(handler)
-	defer server.Close()
-
-	println(server.URL)
-	var client = NewClient(server.URL)
-
-	fn(client)
-}
-
 func withContext(fn func(client *Client, store Store)) {
-	var store = NewStore()
+	var store = NewStore(Options{CreateTable: true})
 	defer store.Close()
 
 	var handler = NewAppHandler(store)
@@ -44,7 +30,7 @@ func assertStatus(t *testing.T, expected, actual int) {
 }
 
 func TestClientSimple(t *testing.T) {
-	withClient(func(client *Client) {
+	withContext(func(client *Client, store Store) {
 		// create
 		var todo = NewTodo("todo 1")
 		var err = client.Create(todo)
@@ -129,7 +115,7 @@ func TestClientSimple(t *testing.T) {
 }
 
 func TestClientFilter(t *testing.T) {
-	withClient(func(client *Client) {
+	withContext(func(client *Client, store Store) {
 		// create
 		client.Create(NewTodo("todo 1"))
 
