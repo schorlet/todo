@@ -6,7 +6,7 @@ import (
 )
 
 type Todo struct {
-	ID      string    `json:"id"`
+	ID      string    `json:"id" gorethink:"id,omitempty"`
 	Text    string    `json:"text"`
 	Status  string    `json:"status"`
 	Created time.Time `json:"created"`
@@ -28,6 +28,13 @@ func (t *Todo) Complete() {
 
 func (t Todo) Completed() bool {
 	return t.Status == "completed"
+}
+
+func (t Todo) Equal(other Todo) bool {
+	return t.ID == other.ID &&
+		t.Text == other.Text &&
+		t.Status == other.Status &&
+		t.Created.Unix() == other.Created.Unix()
 }
 
 func (t Todo) String() string {

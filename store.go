@@ -33,7 +33,8 @@ func NewStore(options ...Options) Store {
 		option = options[0]
 	}
 
-	var driver = "sqlite3"
+	var driver = "rethink"
+	// var driver = "sqlite3"
 	if len(option.Driver) > 0 {
 		driver = option.Driver
 	}
@@ -44,10 +45,16 @@ func NewStore(options ...Options) Store {
 	if len(option.Url) > 0 {
 		url = option.Url
 	} else if len(url) == 0 {
-		url = ":memory:"
+		// url = ":memory:"
+		url = "localhost:28015/test"
 	}
 
-	var store = NewSqlStore(driver, url)
+	var store Store
+	if driver == "rethink" {
+		store = NewRethinkStore(url)
+	} else {
+		store = NewSqlStore(driver, url)
+	}
 
 	if option.CreateTable {
 		store.CreateTable()

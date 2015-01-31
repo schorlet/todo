@@ -90,8 +90,8 @@ func TestStoreSimple(t *testing.T) {
 
 	// read
 	var todo2 = findTodo(t, store, todo.ID)
-	if *todo != todo2 {
-		t.Fatal("equals error", todo, todo2)
+	if !todo2.Equal(*todo) {
+		t.Fatalf("equals error:\n%s\n%s\n", todo, todo2)
 	}
 
 	// delete
@@ -164,7 +164,7 @@ func TestStoreFilter(t *testing.T) {
 		t.Fatal("todos count error", todos)
 	}
 
-	if todos[0] != *todo3 {
+	if !todos[0].Equal(*todo3) {
 		t.Fatal("todos filter error", todos)
 	}
 
@@ -242,12 +242,13 @@ func BenchmarkStoreD(b *testing.B) {
 	var ids = saveTodos(b, store)
 
 	rand.Seed(time.Now().UnixNano())
-	b.ResetTimer()
 
 	var idm = make(map[string]bool)
 	for _, id := range ids {
 		idm[id] = true
 	}
+
+	b.ResetTimer()
 
 	for id := range idm {
 		var err = store.Delete(id)

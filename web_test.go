@@ -69,8 +69,8 @@ func TestClientSimple(t *testing.T) {
 		}
 		assertStatus(t, http.StatusOK, client.Status)
 
-		if *todo != todo2 {
-			t.Fatal("equals error", todo, todo2)
+		if !todo2.Equal(*todo) {
+			t.Fatalf("equals error:\n%s\n%s\n", todo, todo2)
 		}
 
 		// filter
