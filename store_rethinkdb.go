@@ -48,14 +48,24 @@ func (s rethinkStore) Close() {
 
 // CreateTable drop and create the todo table.
 func (s rethinkStore) CreateTable() {
-	var err = r.Db("test").TableDrop("Todo").Exec(s.session)
+	var err = r.Db("test").Table("Todo").IndexDrop("Status").Exec(s.session)
+	if err != nil {
+		log.Println(err)
+	}
+
+	err = r.Db("test").TableDrop("Todo").Exec(s.session)
 	if err != nil {
 		log.Println(err)
 	}
 
 	err = r.Db("test").TableCreate("Todo").Exec(s.session)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(err)
+	}
+
+	err = r.Db("test").Table("Todo").IndexCreate("Status").Exec(s.session)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 
@@ -97,9 +107,9 @@ func (s rethinkStore) List() Todos {
 func (s rethinkStore) Filter(status string) Todos {
 	var todos = make(Todos, 0)
 
-	var cur, err = r.Table("Todo").Filter(
-		r.Row.Field("Status").Eq(status),
-	).OrderBy(r.Desc("Created")).Run(s.session)
+	var cur, err = r.Table("Todo").
+		GetAllByIndex("Status", status).
+		OrderBy(r.Desc("Created")).Run(s.session)
 
 	if err != nil {
 		log.Printf("rethink: filter - %s\n", err)
@@ -195,9 +205,9 @@ func (s rethinkStore) Delete(id string) error {
 
 // Clear deletes the todos with the specified status.
 func (s rethinkStore) Clear(status string) (int64, error) {
-	var res, err = r.Table("Todo").Filter(
-		r.Row.Field("Status").Eq(status),
-	).Delete().RunWrite(s.session)
+	var res, err = r.Table("Todo").
+		GetAllByIndex("Status", status).
+		Delete().RunWrite(s.session)
 
 	if err != nil {
 		log.Printf("rethink: clear - %s\n", err)
