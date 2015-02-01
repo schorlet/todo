@@ -8,9 +8,10 @@ import (
 	"time"
 )
 
-func withContext(fn func(client *Client, store Store)) {
-	var store = NewStore(Options{CreateTable: true})
+func withClientContext(fn func(client *Client, store Store)) {
+	var store = NewStore()
 	defer store.Close()
+	store.CreateTable()
 
 	var handler = NewAppHandler(store)
 	var server = httptest.NewServer(handler)
@@ -30,7 +31,7 @@ func assertStatus(t *testing.T, expected, actual int) {
 }
 
 func TestClientSimple(t *testing.T) {
-	withContext(func(client *Client, store Store) {
+	withClientContext(func(client *Client, store Store) {
 		// create
 		var todo = NewTodo("todo 1")
 		var err = client.Create(todo)
@@ -115,7 +116,7 @@ func TestClientSimple(t *testing.T) {
 }
 
 func TestClientFilter(t *testing.T) {
-	withContext(func(client *Client, store Store) {
+	withClientContext(func(client *Client, store Store) {
 		// create
 		client.Create(NewTodo("todo 1"))
 
@@ -181,7 +182,7 @@ func TestClientFilter(t *testing.T) {
 }
 
 func BenchmarkClientR(b *testing.B) {
-	withContext(func(client *Client, store Store) {
+	withClientContext(func(client *Client, store Store) {
 		var ids = saveTodos(b, store)
 
 		rand.Seed(time.Now().UnixNano())

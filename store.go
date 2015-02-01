@@ -19,34 +19,30 @@ type Store interface {
 	CreateTable()
 }
 
-type Options struct {
-	Driver      string
-	Url         string
-	CreateTable bool
-}
-
 // NewStore returns a new Store.
 // NewStore reads DATABASE_URL environment variable.
-func NewStore(options ...Options) Store {
-	var option = Options{}
-	if len(options) >= 1 {
-		option = options[0]
-	}
-
-	var driver = "rethink"
+func NewStore() Store {
 	// var driver = "sqlite3"
-	if len(option.Driver) > 0 {
-		driver = option.Driver
-	}
+	var driver = "rethink"
 
 	var url = os.Getenv("DATABASE_URL")
 	url = strings.TrimSpace(url)
 
-	if len(option.Url) > 0 {
-		url = option.Url
-	} else if len(url) == 0 {
+	if len(url) == 0 {
 		// url = ":memory:"
 		url = "localhost:28015/test"
+	}
+
+	return OpenStore(driver, url)
+}
+
+// OpenStore returns a new Store.
+func OpenStore(driver, url string) Store {
+	if len(driver) == 0 {
+		panic("store: driver is empty")
+	}
+	if len(url) == 0 {
+		panic("store: url is empty")
 	}
 
 	var store Store
@@ -54,10 +50,6 @@ func NewStore(options ...Options) Store {
 		store = NewRethinkStore(url)
 	} else {
 		store = NewSqlStore(driver, url)
-	}
-
-	if option.CreateTable {
-		store.CreateTable()
 	}
 
 	return store
