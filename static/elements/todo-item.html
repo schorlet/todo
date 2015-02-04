@@ -1,0 +1,68 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="todo-input.html">
+
+<polymer-element name="todo-item" extends="li" attributes="item editing"
+        on-blur="{{commitAction}}">
+
+    <template>
+        <link rel="stylesheet" href="todo-item.css">
+
+        <div class="view {{ {completed: item.completed, editing: editing} | tokenList }}"
+                hidden?="{{editing}}" on-dblclick="{{editAction}}">
+
+            <input type="checkbox" class="toggle" checked="{{item.completed}}"
+                on-click="{{toggleAction}}">
+
+            <label>{{item.title}}</label>
+
+            <button class="destroy" on-click="{{destroyAction}}"></button>
+        </div>
+
+        <input is="todo-input" id="edit" class="edit" value="{{item.title}}"
+                hidden?="{{!editing}}"
+                on-todo-input-commit="{{commitAction}}"
+                on-todo-input-cancel="{{cancelAction}}">
+    </template>
+    <script>
+        Polymer('todo-item', {
+            editing: false,
+
+            // template: on-dblclick event
+            editAction: function() {
+                this.editing = true;
+                // schedule focus for the end of microtask, when the input will be visible
+                this.asyncMethod(function() {
+                    this.$.edit.focus();
+                });
+            },
+
+            // template: todo-input commit event
+            commitAction: function() {
+                if (this.editing) {
+                    this.editing = false;
+                    this.item.title = this.item.title.trim();
+                    if (this.item.title === '') {
+                        this.destroyAction();
+                    } else {
+                        this.fire('todo-item-changed');
+                    }
+                }
+            },
+
+            // template: todo-input cancel event
+            cancelAction: function() {
+                this.editing = false;
+            },
+
+            // template: checkbox on-click event
+            toggleAction: function() {
+                this.fire('todo-item-changed');
+            },
+
+            // template: button on-click event
+            destroyAction: function() {
+                this.fire('todo-item-destroy', this.item);
+            }
+        });
+    </script>
+</polymer-element>

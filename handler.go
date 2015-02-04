@@ -9,10 +9,6 @@ import (
 	"github.com/gorilla/handlers"
 )
 
-func Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome!")
-}
-
 func About(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Here is the about page.")
 }

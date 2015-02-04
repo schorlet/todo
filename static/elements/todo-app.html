@@ -1,0 +1,108 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/flatiron-director/flatiron-director.html">
+<link rel="import" href="todo-input.html">
+<link rel="import" href="todo-item.html">
+
+<polymer-element name="todo-app" attributes="route modelId">
+    <template>
+        <link rel="stylesheet" href="todo-app.css">
+        <flatiron-director route="{{route}}"></flatiron-director>
+
+        <section id="todoapp">
+            <header id="header">
+                <input is="todo-input" id="new-todo"
+                    placeholder="What needs to be done?" autofocus
+                    on-todo-input-commit="{{inputAddAction}}"
+                    on-todo-input-cancel="{{inputCancelAction}}">
+            </header>
+
+            <section id="main" hidden?="{{model.totalCount == 0}}">
+                <input id="toggle-all" type="checkbox"
+                    on-change="{{toggleAllAction}}"
+                    checked="{{model.allCompleted}}">
+
+                <label for="toggle-all">Mark all as complete</label>
+
+                <ul id="todo-list"
+                    on-todo-item-changed="{{itemChangedAction}}"
+                    on-todo-item-destroy="{{itemDestroyAction}}">
+
+                    <template repeat="{{model.filtered}}">
+                        <li is="todo-item" item="{{}}"></li>
+                    </template>
+                </ul>
+            </section>
+
+            <footer id="footer" hidden?="{{model.totalCount == 0}}">
+                <span id="todo-count">
+                    <strong>{{model.activeCount}}</strong>
+                        {{model.activeCount == 1 ? 'item' : 'items'}} left
+                    </span>
+
+                <core-selector id="filters" selected="{{route || 'all'}}">
+                    <li name="all">
+                        <a href="../#/">All</a>
+                    </li>
+                    <li name="active">
+                        <a href="../#/active">Active</a>
+                    </li>
+                    <li name="completed">
+                        <a href="../#/completed">Completed</a>
+                    </li>
+                </core-selector>
+
+                <button hidden?="{{model.completedCount == 0}}" id="clear-completed"
+                    on-click="{{clearCompletedAction}}">Clear completed ({{model.completedCount}})
+                </button>
+            </footer>
+        </section>
+    </template>
+
+    <script>
+        Polymer('todo-app', {
+            // attribute: modelId event
+            modelIdChanged: function() {
+                this.model = document.querySelector('#' + this.modelId);
+            },
+
+            // attribute: route event
+            routeChanged: function() {
+                if (this.model) {
+                    this.model.filter = this.route;
+                }
+            },
+
+            // template: todo-input actions
+            inputAddAction: function() {
+                this.model.newItem(this.$['new-todo'].value);
+                // when polyfilling Object.observe, make sure we update immediately
+                // Platform.flush();
+                this.$['new-todo'].value = '';
+            },
+            inputCancelAction: function() {
+                this.$['new-todo'].value = '';
+            },
+
+            // template: todo-item actions
+            itemChangedAction: function() {
+                if (this.model) {
+                    this.model.itemsChanged();
+                }
+            },
+            itemDestroyAction: function(e, detail) {
+                this.model.destroyItem(detail);
+            },
+
+            // template: toggle-all action
+            toggleAllAction: function(e, detail, sender) {
+                this.model.setItemsCompleted(sender.checked);
+            },
+
+            // template: clear-completed action
+            clearCompletedAction: function() {
+                this.model.clearItems();
+            }
+        });
+    </script>
+
+</polymer-element>
