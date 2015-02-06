@@ -32,7 +32,7 @@ func (ctx Context) Register(router *mux.Router) {
 	router.Get(RouteClear).Handler(ErrorFunc(ctx.Clear))
 }
 
-// List handles Todos listing.
+// List handles todos listing.
 func (ctx Context) List(w http.ResponseWriter, r *http.Request) error {
 	var todos = ctx.Store.List()
 	return writeJSON(w, todos, http.StatusOK) // 200

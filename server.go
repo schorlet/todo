@@ -9,15 +9,20 @@ import (
 // NewAppHandler creates a new http.ServeMux,
 // and registers the application handlers.
 func NewAppHandler(store Store) http.Handler {
+	var router = http.NewServeMux()
 	var chain = alice.New(LoggingHandler, RecoverHandler)
 
-	var router = http.NewServeMux()
-	router.Handle("/about", chain.ThenFunc(About))
-	router.Handle("/", chain.Then(http.FileServer(http.Dir("./static"))))
-
+	// todos api
 	var todoRouter = NewRouter()
-	NewContext(store).Register(todoRouter)
+	var todoContext = NewContext(store)
+	todoContext.Register(todoRouter)
+
 	router.Handle("/api/", chain.Then(todoRouter))
+
+	// static pages
+	router.Handle("/index.html", chain.Then(HomePage(store)))
+	router.Handle("/about", chain.ThenFunc(AboutPage))
+	router.Handle("/", chain.ThenFunc(StaticPages))
 
 	return router
 }
