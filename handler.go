@@ -15,7 +15,7 @@ var templates *template.Template
 
 func init() {
 	templates = template.Must(template.New("base").Funcs(
-		template.FuncMap{"json": templateJSON}).ParseFiles("static/index.html"))
+		template.FuncMap{"jsstr": templateJSStr}).ParseFiles("static/index.html"))
 }
 
 // AboutPage handles about page.

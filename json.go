@@ -28,7 +28,12 @@ func readJSON(r *http.Request, v interface{}) error {
 	return decoder.Decode(v)
 }
 
-func templateJSON(v interface{}) template.JS {
+func templateJSRaw(v interface{}) template.JS {
 	var a, _ = json.Marshal(v)
 	return template.JS(a)
+}
+
+func templateJSStr(v interface{}) template.JSStr {
+	var a, _ = json.Marshal(v)
+	return template.JSStr(a)
 }
