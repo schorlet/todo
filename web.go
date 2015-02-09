@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Context manages Todos.
+// Context manages todos.
 type Context struct {
 	Store
 }

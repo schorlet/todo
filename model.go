@@ -7,16 +7,16 @@ import (
 
 type Todo struct {
 	ID      string    `json:"id" gorethink:"id,omitempty"`
-	Text    string    `json:"text"`
+	Title   string    `json:"title"`
 	Status  string    `json:"status"`
 	Created time.Time `json:"created"`
 }
 
 type Todos []Todo
 
-func NewTodo(text string) *Todo {
+func NewTodo(title string) *Todo {
 	return &Todo{
-		Text:    text,
+		Title:   title,
 		Status:  "active",
 		Created: time.Now().UTC(),
 	}
@@ -32,14 +32,14 @@ func (t Todo) Completed() bool {
 
 func (t Todo) Equal(other Todo) bool {
 	return t.ID == other.ID &&
-		t.Text == other.Text &&
+		t.Title == other.Title &&
 		t.Status == other.Status &&
 		t.Created.Unix() == other.Created.Unix()
 }
 
 func (t Todo) String() string {
-	return fmt.Sprintf("id:%s, text:%s, status:%s, created:%s",
-		t.ID, t.Text, t.Status, t.Created)
+	return fmt.Sprintf("id:%s, title:%s, status:%s, created:%s",
+		t.ID, t.Title, t.Status, t.Created)
 }
 
 type ByCreated Todos

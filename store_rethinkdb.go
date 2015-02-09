@@ -162,7 +162,7 @@ func (s rethinkStore) Insert(t *Todo) error {
 // Update saves the given todo.
 func (s rethinkStore) Update(t *Todo) error {
 	var cols = map[string]interface{}{
-		"Text":   t.Text,
+		"Title":  t.Title,
 		"Status": t.Status,
 	}
 

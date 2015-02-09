@@ -65,7 +65,7 @@ func (s sqlStore) CreateTable() {
 func (s sqlStore) Find(id string) (Todo, error) {
 	var t Todo
 
-	var query = `SELECT id, text, status, created
+	var query = `SELECT id, title, status, created
         FROM todo
         WHERE id = $1`
 	// println(query)
@@ -85,7 +85,7 @@ func (s sqlStore) Find(id string) (Todo, error) {
 func (s sqlStore) List() Todos {
 	var todos = make(Todos, 0)
 
-	var query = `SELECT id, text, status, created
+	var query = `SELECT id, title, status, created
         FROM todo
         ORDER BY created DESC`
 	// println(query)
@@ -103,7 +103,7 @@ func (s sqlStore) List() Todos {
 func (s sqlStore) Filter(status string) Todos {
 	var todos = make(Todos, 0)
 
-	var query = `SELECT id, text, status, created
+	var query = `SELECT id, title, status, created
         FROM todo
         WHERE status = $1
         ORDER BY created DESC`
@@ -134,13 +134,13 @@ func (s sqlStore) Save(t *Todo) error {
 
 // Insert saves the given todo.
 func (s sqlStore) Insert(t *Todo) error {
-	var query = `INSERT INTO todo (text, status, created)
+	var query = `INSERT INTO todo (title, status, created)
                 VALUES ($1, $2, $3)`
 
 	var tx = s.db.MustBegin()
 	defer tx.Rollback()
 
-	var r, err = tx.Exec(query, t.Text, t.Status, t.Created)
+	var r, err = tx.Exec(query, t.Title, t.Status, t.Created)
 	if err != nil {
 		log.Printf("store: insert - %s\n%s\n%s\n", err, query, t)
 		return err
@@ -158,13 +158,13 @@ func (s sqlStore) Insert(t *Todo) error {
 
 // Update saves the given todo.
 func (s sqlStore) Update(t *Todo) error {
-	var query = `UPDATE todo SET text = $1, status = $2
+	var query = `UPDATE todo SET title = $1, status = $2
                 WHERE id = $3`
 
 	var tx = s.db.MustBegin()
 	defer tx.Rollback()
 
-	var r, err = tx.Exec(query, t.Text, t.Status, t.ID)
+	var r, err = tx.Exec(query, t.Title, t.Status, t.ID)
 	if err != nil {
 		log.Printf("store: update - %s\n%s\n%s\n", err, query, t)
 		return err
@@ -240,7 +240,7 @@ DROP TABLE IF EXISTS todo;
 const CreateTable = `
 CREATE TABLE IF NOT EXISTS todo (
     id      INTEGER PRIMARY KEY AUTOINCREMENT,
-    text    TEXT NOT NULL,
+    title   TEXT NOT NULL,
     status  TEXT NOT NULL,
     created DATETIME NOT NULL
 );

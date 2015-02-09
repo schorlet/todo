@@ -97,7 +97,7 @@ func (c *Client) Create(todo *Todo) error {
 	return err
 }
 
-// GET /api/todos{id}
+// GET /api/todos/{id}
 func (c *Client) Find(id string) (Todo, error) {
 	var pairs = []string{"id", id}
 	var path, _ = c.router.Get(RouteFind).URLPath(pairs...)

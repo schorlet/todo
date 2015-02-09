@@ -66,7 +66,7 @@ func TestStoreSimple(t *testing.T) {
 	withStoreContext(func(store Store) {
 
 		// create
-		var todo = &Todo{Text: "todo 1"}
+		var todo = &Todo{Title: "todo 1"}
 		saveTodo(t, store, todo)
 
 		if todo.Status != "active" {
@@ -236,7 +236,7 @@ func BenchmarkStoreU(b *testing.B) {
 				b.Fatal(err)
 			}
 
-			todo.Text = fmt.Sprintf("[%s]", todo.Text)
+			todo.Title = fmt.Sprintf("[%s]", todo.Title)
 			err = store.Save(&todo)
 			if err != nil {
 				b.Fatal(err)
