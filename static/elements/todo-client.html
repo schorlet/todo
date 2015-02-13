@@ -1,0 +1,59 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/core-ajax/core-xhr.html">
+
+<polymer-element name="todo-client" hidden>
+    <template>
+        <core-xhr id="xhr"></core-xhr>
+    </template>
+    <script>
+        Polymer({
+            // exec
+            exec: function(options) {
+                var req = this.$.xhr.request(options);
+                return new Promise(function (resolve, reject) {
+                    req.onload = function() {
+                        if (req.status >= 200 && req.status < 300) {
+                            resolve(req.response);
+                        } else {
+                            var response = req.status + ': ' + req.responseText;
+                            reject(Error(response));
+                        }
+                    };
+                    req.onerror = function() {
+                        reject(Error("Network Error"));
+                    };
+                });
+            },
+            // refresh
+            refresh: function() {
+                return this.exec({ method: "GET", url: "/api/todos" }).then(JSON.parse);
+            },
+            // newItem
+            newItem: function(todo) {
+                return this.exec({ method: "POST", url: "/api/todos",
+                    body: JSON.stringify(todo),
+                    headers: { "Content-Type": "application/json" } }).then(JSON.parse);
+            },
+            // itemChanged
+            itemChanged: function(todo) {
+                return this.exec({ method: "PUT", url: "/api/todos/" + todo.id,
+                    body: JSON.stringify(todo),
+                    headers: { "Content-Type": "application/json" } }).then(JSON.parse);
+            },
+            // destroyItem
+            destroyItem: function(id) {
+                return this.exec({ method: "DELETE", url: "/api/todos/" + id });
+            },
+            // clearCompleted
+            clearCompleted: function() {
+                var that = this;
+                return this.exec({ method: "DELETE", url: "/api/todos/status/completed" });
+            },
+            // toggleAll
+            toggleAll: function(completed) {
+                var status = completed ? "completed" : "active";
+                return this.exec({ method: "PATCH", url: "/api/todos/status/" + status });
+            }
+        });
+    </script>
+</polymer-element>

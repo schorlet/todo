@@ -1,1 +1,1 @@
-Simple todo webapp with golang.
+Simple todo webapp with golang and polymer.

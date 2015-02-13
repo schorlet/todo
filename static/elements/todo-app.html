@@ -1,5 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/flatiron-director/flatiron-director.html">
+<link rel="import" href="../bower_components/core-selector/core-selector.html">
 <link rel="import" href="todo-input.html">
 <link rel="import" href="todo-item.html">
 
@@ -59,7 +60,7 @@
     </template>
 
     <script>
-        Polymer('todo-app', {
+        Polymer({
             // attribute: modelId event
             modelIdChanged: function() {
                 this.model = document.querySelector('#' + this.modelId);
@@ -75,8 +76,6 @@
             // template: todo-input actions
             inputAddAction: function() {
                 this.model.newItem(this.$['new-todo'].value);
-                // when polyfilling Object.observe, make sure we update immediately
-                // Platform.flush();
                 this.$['new-todo'].value = '';
             },
             inputCancelAction: function() {
@@ -84,10 +83,8 @@
             },
 
             // template: todo-item actions
-            itemChangedAction: function() {
-                if (this.model) {
-                    this.model.itemsChanged();
-                }
+            itemChangedAction: function(e, detail) {
+                this.model.itemChanged(detail);
             },
             itemDestroyAction: function(e, detail) {
                 this.model.destroyItem(detail);
@@ -95,12 +92,12 @@
 
             // template: toggle-all action
             toggleAllAction: function(e, detail, sender) {
-                this.model.setItemsCompleted(sender.checked);
+                this.model.toggleAll(sender.checked);
             },
 
             // template: clear-completed action
             clearCompletedAction: function() {
-                this.model.clearItems();
+                this.model.clearCompleted();
             }
         });
     </script>

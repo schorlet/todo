@@ -7,10 +7,10 @@
     <template>
         <link rel="stylesheet" href="todo-item.css">
 
-        <div class="view {{ {completed: item.completed, editing: editing} | tokenList }}"
+        <div class="view {{ {completed: item.status=='completed', editing: editing} | tokenList }}"
                 hidden?="{{editing}}" on-dblclick="{{editAction}}">
 
-            <input type="checkbox" class="toggle" checked="{{item.completed}}"
+            <input type="checkbox" class="toggle" checked="{{item.status=='completed'}}"
                 on-click="{{toggleAction}}">
 
             <label>{{item.title}}</label>
@@ -24,7 +24,7 @@
                 on-todo-input-cancel="{{cancelAction}}">
     </template>
     <script>
-        Polymer('todo-item', {
+        Polymer({
             editing: false,
 
             // template: on-dblclick event
@@ -44,7 +44,7 @@
                     if (this.item.title === '') {
                         this.destroyAction();
                     } else {
-                        this.fire('todo-item-changed');
+                        this.fire('todo-item-changed', this.item);
                     }
                 }
             },
@@ -55,8 +55,9 @@
             },
 
             // template: checkbox on-click event
-            toggleAction: function() {
-                this.fire('todo-item-changed');
+            toggleAction: function(e, detail, sender) {
+                this.item.status = sender.checked ? "completed" : "active";
+                this.fire('todo-item-changed', this.item);
             },
 
             // template: button on-click event

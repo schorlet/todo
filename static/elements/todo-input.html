@@ -9,7 +9,7 @@
             var ENTER_KEY = 13;
             var ESC_KEY = 27;
 
-            Polymer('todo-input', {
+            Polymer({
                 // Listen for enter on keypress but esc on keyup, because
                 // IE doesn't fire keyup for enter.
                 keypressAction: function(e, detail, sender) {

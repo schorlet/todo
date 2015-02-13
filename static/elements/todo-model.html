@@ -1,43 +1,32 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="todo-client.html">
 
-<polymer-element name="todo-model" attributes="filter storageId">
+<polymer-element name="todo-model" hidden attributes="filter items">
+    <template>
+        <todo-client id="storage"></todo-client>
+    </template>
+
     <script>
-        Polymer('todo-model', {
+        Polymer({
             filtered: null,
             completedCount: 0,
             activeCount: 0,
             totalCount: 0,
             allCompleted: false,
 
-            // attribute: storageId event
-            storageIdChanged: function() {
-                this.storage = document.querySelector('#' + this.storageId);
-                if (this.storage) {
-                    this.items = this.storage.value;
-                }
-            },
-
-            // ready event
-            ready: function() {
-                this.asyncMethod(function() {
-                    this.items = this.storage.value || [];
-                });
+            // created
+            created: function() {
+                this.items = [];
             },
 
             // attribute: items event
             itemsChanged: function() {
-                console.log("itemsChanged");
                 this.totalCount = this.items.length;
                 this.completedCount = this.items.filter(this.filters.completed).length;
-                this.activeCount = this.items.length - this.completedCount;
+                this.activeCount = this.totalCount - this.completedCount;
                 this.allCompleted = this.completedCount && !this.activeCount;
 
                 this.filterItems();
-
-                if (this.storage) {
-                    this.storage.value = this.items;
-                    this.storage.save();
-                }
             },
 
             // attribute: filter event
@@ -59,34 +48,75 @@
                         title: title,
                         completed: false
                     };
-                    this.items.push(item);
+                    this.$.storage.newItem(item)
+                        .then(function(response) {
+                            this.items.push(response);
+                        }.bind(this))
+                        .catch(function(error) {
+                            console.error(error.message);
+                        });
                 }
             },
             destroyItem: function(item) {
                 var i = this.items.indexOf(item);
                 if (i >= 0) {
-                    this.items.splice(i, 1);
+                    this.$.storage.destroyItem(item.id)
+                        .then(function() {
+                            this.items.splice(i, 1);
+                        }.bind(this))
+                        .catch(function(error) {
+                            console.error(error.message);
+                        });
+                }
+            },
+            itemChanged: function(item) {
+                var i = this.items.indexOf(item);
+                if (i >= 0) {
+                    this.$.storage.itemChanged(item)
+                        .then(function(response) {
+                            this.items[i] = response;
+                        }.bind(this))
+                        .catch(function(error) {
+                            console.error(error.message);
+                        });
                 }
             },
 
             // collection functions
-            clearItems: function (){
-                this.items = this.items.filter(this.filters.active);
+            clearCompleted: function() {
+                var that = this;
+                this.$.storage.clearCompleted()
+                    .then(function() {
+                        return that.$.storage.refresh();
+                    })
+                    .then(function(response) {
+                        that.items = response || [];
+                    })
+                    .catch(function(error) {
+                        console.error(error.message);
+                    });
             },
-            setItemsCompleted: function(completed) {
-                this.items.forEach(function(item) {
-                    item.completed = completed;
-                });
-                this.itemsChanged();
+            toggleAll: function(completed) {
+                var that = this;
+                this.storage.toggleAll(completed)
+                    .then(function() {
+                        return that.$.storage.refresh();
+                    })
+                    .then(function(response) {
+                        that.items = response || [];
+                    })
+                    .catch(function(error) {
+                        console.error(error.message);
+                    });
             },
 
             // filters definitions
             filters: {
                 active: function(item) {
-                    return !item.completed;
+                    return item.status == "active";
                 },
                 completed: function(item) {
-                    return item.completed;
+                    return item.status == "completed";
                 }
             }
      });
