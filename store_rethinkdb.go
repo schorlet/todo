@@ -176,7 +176,7 @@ func (s rethinkStore) Update(t *Todo) error {
 
 	if res.Errors != 0 {
 		err = fmt.Errorf(res.FirstError)
-	} else if res.Replaced == 0 {
+	} else if res.Replaced == 0 && res.Unchanged == 0 {
 		err = NotFound{r.ErrEmptyResult}
 	}
 
