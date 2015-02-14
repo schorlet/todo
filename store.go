@@ -14,6 +14,7 @@ type Store interface {
 	// status
 	Filter(status string) Todos
 	Clear(status string) (int64, error)
+	Toggle(status string) (int64, error)
 	// store
 	Close()
 	CreateTable()

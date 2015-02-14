@@ -30,6 +30,7 @@ func (ctx Context) Register(router *mux.Router) {
 	// _/{status}
 	router.Get(RouteFilter).Handler(ErrorFunc(ctx.Filter))
 	router.Get(RouteClear).Handler(ErrorFunc(ctx.Clear))
+	router.Get(RouteToggle).Handler(ErrorFunc(ctx.Toggle))
 }
 
 // List handles todos listing.
@@ -38,14 +39,14 @@ func (ctx Context) List(w http.ResponseWriter, r *http.Request) error {
 	return writeJSON(w, todos, http.StatusOK) // 200
 }
 
-// Filter handles todos filtering.
+// Filter handles todos filtering by status.
 func (ctx Context) Filter(w http.ResponseWriter, r *http.Request) error {
 	var status = readStatus(w, r)
 	var todos = ctx.Store.Filter(status)
 	return writeJSON(w, todos, http.StatusOK) // 200
 }
 
-// Clear handles todos deletion.
+// Clear handles todos deletion by status.
 func (ctx Context) Clear(w http.ResponseWriter, r *http.Request) error {
 	var status = readStatus(w, r)
 	var count, err = ctx.Store.Clear(status)
@@ -54,6 +55,17 @@ func (ctx Context) Clear(w http.ResponseWriter, r *http.Request) error {
 	}
 	var cleared = map[string]int64{"count": count}
 	return writeJSON(w, cleared, http.StatusOK) // 200
+}
+
+// Toggle handles todos updates by status.
+func (ctx Context) Toggle(w http.ResponseWriter, r *http.Request) error {
+	var status = readStatus(w, r)
+	var count, err = ctx.Store.Toggle(status)
+	if err != nil {
+		return err // 500
+	}
+	var toggled = map[string]int64{"count": count}
+	return writeJSON(w, toggled, http.StatusOK) // 200
 }
 
 // Create handles todo creation.
@@ -102,6 +114,7 @@ func (ctx Context) Update(w http.ResponseWriter, r *http.Request) error {
 		return err // 500
 	}
 
+	// todo.Title = "[" + todo.Title + "]"
 	return writeJSON(w, todo, http.StatusOK) // 200
 }
 

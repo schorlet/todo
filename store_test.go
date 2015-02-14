@@ -192,6 +192,24 @@ func TestStoreFilter(t *testing.T) {
 		if len(todos) != 0 {
 			t.Fatal("todos count error", todos)
 		}
+
+		// toggle
+		count, err := store.Toggle(todo3.Status)
+		if count != 2 {
+			t.Fatal("todos toggle error", count, err)
+		}
+
+		// filter
+		todos = store.Filter(todo1.Status)
+		if len(todos) != 0 {
+			t.Fatal("todos count error", todos)
+		}
+
+		// filter
+		todos = store.Filter(todo3.Status)
+		if len(todos) != 2 {
+			t.Fatal("todos count error", todos)
+		}
 	})
 }
 

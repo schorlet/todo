@@ -220,3 +220,26 @@ func (s rethinkStore) Clear(status string) (int64, error) {
 
 	return int64(res.Deleted), nil
 }
+
+// Toggle updates todos.status with the specified status.
+func (s rethinkStore) Toggle(status string) (int64, error) {
+	var cols = map[string]interface{}{
+		"Status": status,
+	}
+
+	var res, err = r.Table("Todo").
+		Filter(r.Row.Field("Status").Ne(status)).
+		Update(cols).RunWrite(s.session)
+	// log.Printf("%+v", res)
+
+	if err != nil {
+		log.Printf("rethink: toggle - %s\n%s\n", err)
+		return 0, err
+	}
+
+	if res.Errors != 0 {
+		err = fmt.Errorf(res.FirstError)
+	}
+
+	return int64(res.Replaced), err
+}

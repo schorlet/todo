@@ -167,15 +167,21 @@ func TestClientFilter(t *testing.T) {
 			t.Fatal("todos filter error", todos)
 		}
 
-		// clear
-		cleared, _ = client.Clear(todo2.Status)
-		if cleared != 2 {
-			t.Fatal("todos clear error", cleared)
+		// toggle
+		toggled, _ := client.Toggle(todo3.Status)
+		if toggled != 2 {
+			t.Fatal("todos toggle error", toggled)
 		}
 
 		// filter
 		todos, _ = client.Filter(todo2.Status)
 		if len(todos) != 0 {
+			t.Fatal("todos filter error", todos)
+		}
+
+		// filter
+		todos, _ = client.Filter(todo3.Status)
+		if len(todos) != 2 {
 			t.Fatal("todos filter error", todos)
 		}
 	})

@@ -98,7 +98,7 @@
             },
             toggleAll: function(completed) {
                 var that = this;
-                this.storage.toggleAll(completed)
+                this.$.storage.toggleAll(completed)
                     .then(function() {
                         return that.$.storage.refresh();
                     })

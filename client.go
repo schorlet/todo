@@ -146,7 +146,7 @@ func (c *Client) Delete(id string) error {
 	return err
 }
 
-// GET /api/todos/{status}
+// GET /api/todos/status/{status}
 func (c *Client) Filter(status string) (Todos, error) {
 	var pairs = []string{"status", status}
 	var path, _ = c.router.Get(RouteFilter).URLPath(pairs...)
@@ -166,13 +166,49 @@ func (c *Client) Filter(status string) (Todos, error) {
 	return todos, err
 }
 
-// DELETE /api/todos/{status}
+// DELETE /api/todos/status/{status}
 func (c *Client) Clear(status string) (int64, error) {
 	var pairs = []string{"status", status}
 	var path, _ = c.router.Get(RouteClear).URLPath(pairs...)
 	var url = c.BaseURL + path.String()
 
 	var err = c.do("DELETE", url, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	if c.Status != http.StatusOK {
+		return 0, fmt.Errorf("client: expected response status %d but was %d",
+			http.StatusOK, c.Status)
+	}
+
+	var result map[string]interface{}
+	err = json.Unmarshal(c.body, &result)
+	if err != nil {
+		return 0, err
+	}
+
+	value, ok := result["count"]
+	if !ok {
+		return 0, fmt.Errorf("client: expected count value")
+	}
+
+	number, ok := value.(float64)
+	if !ok {
+		return 0, fmt.Errorf("client: expected count as float64")
+	}
+
+	count := int64(number)
+	return count, nil
+}
+
+// PATCH /api/todos/status/{status}
+func (c *Client) Toggle(status string) (int64, error) {
+	var pairs = []string{"status", status}
+	var path, _ = c.router.Get(RouteToggle).URLPath(pairs...)
+	var url = c.BaseURL + path.String()
+
+	var err = c.do("PATCH", url, nil)
 	if err != nil {
 		return 0, err
 	}

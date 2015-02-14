@@ -232,6 +232,29 @@ func (s sqlStore) Clear(status string) (int64, error) {
 	return count, err
 }
 
+// Toggle updates todos.status with the specified status.
+func (s sqlStore) Toggle(status string) (int64, error) {
+	var query = `UPDATE todo SET status = $1
+                WHERE status != $1`
+
+	var tx = s.db.MustBegin()
+	defer tx.Rollback()
+
+	var r, err = tx.Exec(query, status)
+	if err != nil {
+		log.Printf("store: toggle - %s\n%s\n", err, query)
+		return 0, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return 0, err
+	}
+
+	count, err := r.RowsAffected()
+	return count, err
+}
+
 const DropTable = `
 DROP INDEX IF EXISTS todoStatus;
 DROP TABLE IF EXISTS todo;

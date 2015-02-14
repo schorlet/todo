@@ -14,6 +14,7 @@ const (
 	// _/{status}
 	RouteFilter = "Todo.Filter"
 	RouteClear  = "Todo.Clear"
+	RouteToggle = "Todo.Toggle"
 )
 
 // NewRouter creates a new mux.Router and defines HTTP methods
@@ -35,8 +36,9 @@ func NewRouterPrefix(prefix string) *mux.Router {
 	router.Methods("PUT").Path(prefix + "/{id:[A-Za-z0-9-]+}").Name(RouteUpdate)
 	router.Methods("DELETE").Path(prefix + "/{id:[A-Za-z0-9-]+}").Name(RouteDelete)
 
-	router.Methods("GET").Path(prefix + "/f/{status:[a-z]+}").Name(RouteFilter)
-	router.Methods("DELETE").Path(prefix + "/f/{status:[a-z]+}").Name(RouteClear)
+	router.Methods("GET").Path(prefix + "/status/{status:[a-z]+}").Name(RouteFilter)
+	router.Methods("DELETE").Path(prefix + "/status/{status:[a-z]+}").Name(RouteClear)
+	router.Methods("PATCH").Path(prefix + "/status/{status:[a-z]+}").Name(RouteToggle)
 
 	return router
 }
