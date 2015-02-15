@@ -15,7 +15,7 @@ var templates *template.Template
 
 func init() {
 	templates = template.Must(template.New("base").Funcs(
-		template.FuncMap{"jsstr": templateJSStr}).ParseFiles("static/index.html"))
+		template.FuncMap{"jsstr": templateJSStr}).ParseFiles("polymer/index.html"))
 }
 
 // AboutPage handles about page.
@@ -45,7 +45,7 @@ func StaticPages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	upath = "static/" + upath
+	upath = "polymer/" + upath
 	http.ServeFile(w, r, path.Clean(upath))
 }
 
